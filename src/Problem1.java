@@ -1,65 +1,72 @@
 public class Problem1 {
     public static void main(String[] args) {
-        int size = 200;
-        int maxValue = 20;
-        int runs = 1;
-        for (int i = 0; i < runs; i++) {
-            int[] array = new int[size];
-            for (int j = 0; j < size; j++) {
-                array[j] = (int)(Math.random() * maxValue);
-                if(Math.random() < .7){
-                    array[j] *= -1;
+        int array_size = 50;
+        int value_range = 20;
+        int cycles = 100;
+        long recur_time = 0;
+        long iter_time = 0;
+        long begin;
+        long end;
+        int[] sample;
+        String output;
+        for (int i = 0; i < cycles; i++) {
+            int[] ans_info;
+            sample = new int[array_size];
+            for (int j = 0; j < array_size; j++) {
+                sample[j] = (int)(Math.random() * value_range);
+                int probability = (int)(Math.random()* 100);
+                if(probability < 40){
+                    sample[j] = sample[j] * -1;
                 }
             }
-            int[] answer;
-            printSlice(array, 0, size -1);
-            System.out.println("Fast");
-            answer = MaxSubArrayFast(array, 0, array.length - 1);
-            System.out.println("i: " + answer[0] + ", j:" + answer[1] + ", Total: " + answer[2]);
-            printSlice(array, answer[0], answer[1]);
-            System.out.println("\nSlow");
+            output = "Recursive:\n";
+            begin = System.nanoTime();
+            ans_info = recursive(sample, 0, sample.length - 1);
+            end = System.nanoTime();
+            recur_time += end - begin;
+            output = output + "i: " + ans_info[0] + ", j:" + ans_info[1] + ", Total: " + ans_info[2] + "\n";
 
-            answer = MaxSubSlow(array);
-            System.out.println("i: " + answer[0] + ", j:" + answer[1] + ", Total: " + answer[2]);
-            printSlice(array, answer[0], answer[1]);
-            System.out.println("\n");
+            output = output + "Iterative\n";
+            begin = System.nanoTime();
+            ans_info = iterative(sample);
+            end = System.nanoTime();
+            iter_time += end -begin;
+            output = output + "i: " + ans_info[0] + ", j:" + ans_info[1] + ", Total: " + ans_info[2]+"\n";
+
+            System.out.println(output);
         }
+        iter_time = iter_time / cycles;
+        recur_time = recur_time / cycles;
+        long speedup = iter_time / recur_time;
+        output = "\n\n";
+        output = output + "Average Recursive: " + recur_time + "\n";
+        output = output + "Average Iterative: " + iter_time + "\n";
+        output = output + "Speedup: " + speedup;
+
+        System.out.println(output);
     }
 
-    public static void printSlice(int[] A, int a, int b) {
-        System.out.print("[");
-        int count = 1;
-        for (int i = a; i <= b; i++) {
-            if (i != b)
-                System.out.print(A[i] + ", ");
-            else
-                System.out.println(A[i] + "]");
-            if(count++ % 30 == 0){
-                System.out.println();
+    public static int[] iterative(int[] a){
+        int length = a.length;
+        int[] answer_array = new int[]{0,0,0};
+        int absolute_max = 0;
+        int current_max;
+        for (int i = 0; i < length; i++) {
+            for (int j = i; j < length; j++) {
+                current_max = 0;
+                for (int k = i; k <= j; k++) {
+                    current_max += a[k];
+                }
+                if (current_max >= absolute_max){
+                    absolute_max = current_max;
+                    answer_array = new int[]{i, j, absolute_max};
+                }
             }
         }
+        return answer_array;
     }
 
-    public static int[] Max(int[] A, int[] B, int[] C) {
-        return Max(Max(A, B), C);
-    }
-
-    public static int[] Max(int[] A, int[] B) {
-        return (A[2] > B[2]) ? A : B;
-    }
-
-    public static int[] MaxSubArrayFast(int[] A, int low, int high) {
-        if (low == high) {
-            return new int[]{low, high, A[low]};
-        } else {
-            int mid = Math.floorDiv(low + high, 2);
-            return Max(MaxSubArrayFast(A, low, mid),
-                    MaxSubArrayFast(A, mid + 1, high),
-                    MaxCrossing(A, low, mid, high));
-        }
-    }
-
-    public static int[] MaxCrossing(int[] A, int low, int mid, int high) {
+    public static int[] crossing(int[] A, int low, int mid, int high) {
         int leftSum = -Integer.MAX_VALUE;
         int rightSum = -Integer.MAX_VALUE;
         int sum = 0;
@@ -83,23 +90,28 @@ public class Problem1 {
         return new int[]{maxLeft, maxRight, leftSum + rightSum};
     }
 
-    public static int[] MaxSubSlow(int[] A){
-        int size = A.length;
-        int[] maxArr = new int[]{0,0,0};
-        int max = 0;
-        int runningMax;
-        for (int i = 0; i < size; i++) {
-            for (int j = i; j < size; j++) {
-                runningMax = 0;
-                for (int k = i; k <= j; k++) {
-                    runningMax += A[k];
-                }
-                if (runningMax >= max){
-                    max = runningMax;
-                    maxArr = new int[]{i, j, max};
-                }
-            }
+    public static int[] recursive(int[] A, int low, int high) {
+        if (low == high) {
+            return new int[]{low, high, A[low]};
+        } else {
+            int mid = Math.floorDiv(low + high, 2);
+            return choose(recursive(A, low, mid),
+                    recursive(A, mid + 1, high),
+                    crossing(A, low, mid, high));
         }
-        return maxArr;
+    }
+
+    public static int[] choose(int[] a, int[] b) {
+        int first = a[2];
+        int second = b[2];
+        if(first > second){
+            return a;
+        } else {
+            return b;
+        }
+    }
+
+    public static int[] choose(int[] a, int[] b, int[] c) {
+        return choose(choose(a, b), c);
     }
 }
