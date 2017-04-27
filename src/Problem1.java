@@ -1,8 +1,10 @@
 public class Problem1 {
     public static void main(String[] args) {
-        int size = 200;
+        int size = 50;
         int maxValue = 20;
-        int runs = 1;
+        int runs = 100;
+        long fastTime = 0;
+        long slowTime = 0;
         for (int i = 0; i < runs; i++) {
             int[] array = new int[size];
             for (int j = 0; j < size; j++) {
@@ -12,18 +14,31 @@ public class Problem1 {
                 }
             }
             int[] answer;
-            printSlice(array, 0, size -1);
-            System.out.println("Fast");
+//            printSlice(array, 0, size -1);
+//            System.out.println("Fast");
+            long start = System.nanoTime();
             answer = MaxSubArrayFast(array, 0, array.length - 1);
-            System.out.println("i: " + answer[0] + ", j:" + answer[1] + ", Total: " + answer[2]);
-            printSlice(array, answer[0], answer[1]);
-            System.out.println("\nSlow");
+            long finish = System.nanoTime();
+            fastTime += finish - start;
+//            System.out.println("i: " + answer[0] + ", j:" + answer[1] + ", Total: " + answer[2]);
+//            printSlice(array, answer[0], answer[1]);
+//            System.out.println("\nSlow");
 
+            start = System.nanoTime();
             answer = MaxSubSlow(array);
-            System.out.println("i: " + answer[0] + ", j:" + answer[1] + ", Total: " + answer[2]);
-            printSlice(array, answer[0], answer[1]);
-            System.out.println("\n");
+            finish = System.nanoTime();
+            slowTime += finish -start;
+//            System.out.println("i: " + answer[0] + ", j:" + answer[1] + ", Total: " + answer[2]);
+//            printSlice(array, answer[0], answer[1]);
+//            System.out.println("\n");
         }
+        slowTime /= runs;
+        fastTime /= runs;
+        long mult = slowTime / fastTime;
+        System.out.println("\n\n");
+        System.out.println("Average Fast: " + fastTime);
+        System.out.println("Average Slow: " + slowTime);
+        System.out.println("Speedup: " + mult);
     }
 
     public static void printSlice(int[] A, int a, int b) {
