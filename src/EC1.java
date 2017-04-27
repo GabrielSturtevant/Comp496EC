@@ -1,4 +1,6 @@
-public class Problem1 {
+import java.text.DecimalFormat;
+
+public class EC1 {
     public static void main(String[] args) {
         int array_size = 50;
         int value_range = 20;
@@ -37,11 +39,12 @@ public class Problem1 {
         }
         iter_time = iter_time / cycles;
         recur_time = recur_time / cycles;
-        long speedup = iter_time / recur_time;
+        double speedup = (double)iter_time / (double)recur_time;
         output = "\n\n";
         output = output + "Average Recursive: " + recur_time + "\n";
         output = output + "Average Iterative: " + iter_time + "\n";
-        output = output + "Speedup: " + speedup;
+        DecimalFormat df = new DecimalFormat("0.0##");
+        output = output + "Speedup: " + df.format(speedup);
 
         System.out.println(output);
     }
